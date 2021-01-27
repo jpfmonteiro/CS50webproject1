@@ -1,0 +1,9 @@
+{% extends "layout.html" %} {% block title %} book {% endblock %} {% block main %}
+
+<img src={{cover}} alt="Cover Thumbnail" style="float:left">
+<div id="text" style="padding-left: 150px; text-align: justify;">
+    <p>
+        {{description}}
+    </p>
+</div>
+{% endblock %}

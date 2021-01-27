@@ -1,0 +1,21 @@
+{% extends "layout.html" %} {% block title %} listed_books {% endblock %} {% block main %}
+<table style="width:100%">
+    <tr>
+        <th>ISBN</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Year</th>
+    </tr>
+    <tr>
+        {%for book in books%}
+        <tr>
+            <td><a href="/Book/{{books.isbn[loop.index - 1]}}">{{ books.isbn[loop.index - 1] }}</a></td>
+            <td>{{ books.title[loop.index - 1] }}</td>
+            <td>{{ books.author[loop.index - 1] }}</td>
+            <td>{{ books.year[loop.index - 1] }}</td>
+        </tr>
+        {%endfor%}
+
+    </tr>
+</table>
+{% endblock %}
