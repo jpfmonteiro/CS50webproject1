@@ -1,0 +1,10 @@
+{% extends "layout.html" %} {% block title %} Add Reviews {% endblock %} {% block main %}
+
+<img src={{cover}} alt="Cover Thumbnail" style="float:left">
+<div id="text" style="padding-left: 150px; text-align: justify;">
+    <p>
+        {{description}}
+    </p>
+</div>
+<button class="btn btn-default" type="submit" formaction="/view_reviews.html">View Reviews</button>
+<button class="btn btn-default" type="submit" formaction="/make_reviews.html">Add Review</button> {% endblock %}

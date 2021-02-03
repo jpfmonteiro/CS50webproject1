@@ -6,5 +6,9 @@
         {{description}}
     </p>
 </div>
-<button class="btn btn-default" type="submit" formaction="/action_page2.php">View Reviews</button>
-<button class="btn btn-default" type="submit" formaction="/action_page2.php">Add Review</button> {% endblock %}
+<div class="form-group">
+    <form>
+        <input type="button" onclick="window.location.href='/view_reviews.html';" value="View Reviews" />
+        <input type="button" onclick="window.location.href='/make_reviews.html';" value="Add Review" />
+    </form>
+</div> {% endblock %}
