@@ -1,6 +1,4 @@
-import os
-import psycopg2
-import isbnlib
+import os, psycopg2, isbnlib, json
 from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
@@ -14,6 +12,8 @@ app = Flask(__name__)
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
+if not os.getenv("API_KEY"):
+    raise RuntimeError("API_KEY is not set")
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -38,16 +38,27 @@ def index():
             return render_template("listed_books.html", books=books)
         #query database for author
         elif request.form.get("search_value") == "author":
-            books = get_books(db.execute("SELECT * FROM books WHERE autor = :author", {"author": request.form.get("search_term")}).fetchall())
+            books = get_books(db.execute("SELECT * FROM books WHERE authors = :author", {"author": request.form.get("search_term")}).fetchall())
             return render_template("listed_books.html", books=books)
         #query database for ISBN
         elif request.form.get("search_value") == "ISBN":
             books = get_books(db.execute("SELECT * FROM books WHERE isbn = :ISBN", {"ISBN": request.form.get("search_term")}).fetchall())
             return render_template("listed_books.html", books=books)
         #query database for year
+        elif request.form.get("search_value") == "year":
+            books = get_books(db.execute("SELECT * FROM books WHERE pubdate = :year", {"year": request.form.get("search_term")}).fetchall())
+            return render_template("listed_books.html", books=books)
+        #list books by tag
+        elif request.form.get("search_value") == "tag":
+            search_value = request.form.get("search_term")
+            search_term = "%" + search_value + "%"
+            books = get_books(db.execute("SELECT * FROM books WHERE tags ILIKE :tag", {"tag": search_term}).fetchall())
+            return render_template("listed_books.html", books=books)
+        #list books by type
         else:
-            books = get_books(db.execute("SELECT * FROM books WHERE year = :year", {"year": request.form.get("search_term")}).fetchall())
-            return render_template("listed_books.html", books=books)         
+            books = get_books(db.execute("SELECT * FROM books").fetchall())
+            return render_template("listed_books.html", books=books)  
+
     return render_template("index.html")
 
 @app.route("/listed_books/<books>")
@@ -55,30 +66,39 @@ def index():
 def listed_books(books):
     return render_template("listed_books.html", books=books)
 
-@app.route("/Book/<string:isbn>", methods=["GET", "POST"])
+@app.route("/Book/<id>", methods=["GET", "POST"])
 @login_required
-def Book(isbn):
+def Book(id):
+    book = get_books(db.execute("SELECT * FROM books WHERE id = :id", {"id": id}).fetchall())
     try:
-        image = isbnlib.cover(isbn)
-        description = isbnlib.desc(isbn)
+        image = isbnlib.cover(book["isbn"][0])
+        description = isbnlib.desc(book["isbn"][0])
         cover = image['thumbnail']
     except:
-        print("Error with isbnlib")
-        cover = "error"
-        description = "error"
-    return render_template("Book.html", cover=cover, description=description, isbn=isbn)
+        #print("ISBN", book.isbn[0])
+        cover = book["cover"][0]
+        print(cover)
+        description = "No description available"
+    return render_template("Book.html", cover=cover, description=description, id=id)
 
-@app.route("/view_reviews.html/", methods=["GET", "POST"])
+@app.route("/view_reviews/<string:isbn>", methods=["GET", "POST"])
 @login_required
-def view_reviews():
+def view_reviews(isbn):
+    book = api_request(isbn)
+    if len(book.keys()) < 1:
+        return apology("UPS... SOMETHING WENT WRONG")
+    volume = book["categories"]
+    #volume = volumes[0]
+    #print(volume["volumeInfo"])
+    #print("new", volume["authors"])
+    #print("book:", book)
         #if request.method == 'POST':
         # do stuff when the form is submitted
-    print("isbn")
         # redirect to end the POST handling
         # the redirect can be to the same route or somewhere else
         #return redirect(url_for('author.html'))
 
-    return render_template("view_reviews.html")
+    return render_template("view_reviews.html", book=volume)
 
 @app.route("/make_reviews.html/", methods=["GET", "POST"])
 @login_required

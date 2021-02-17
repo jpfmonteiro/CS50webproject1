@@ -7,11 +7,11 @@
         <th>Year</th>
     </tr>
     <tr>
-        {%for book in books%}
+        {%for book in books.id%}
         <tr>
-            <td><a href="/Book/{{books.isbn[loop.index - 1]}}">{{ books.isbn[loop.index - 1] }}</a></td>
+            <td><a href="/Book/{{books.id[loop.index - 1]}}">{{ books.isbn[loop.index - 1] }}</a></td>
             <td>{{ books.title[loop.index - 1] }}</td>
-            <td>{{ books.author[loop.index - 1] }}</td>
+            <td>{{ books.authors[loop.index - 1] }}</td>
             <td>{{ books.year[loop.index - 1] }}</td>
         </tr>
         {%endfor%}
